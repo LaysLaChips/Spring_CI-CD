@@ -9,8 +9,8 @@ pipeline {
   environment {
     DOCKER_CRED = 'dockerhub'
     SONAR_TOKEN = credentials('sonar-token')
-    SONAR_URL   = 'http://192.168.2.76:9000'
-    NEXUS_URL   = 'http://192.168.2.76:8081/repository/maven-snapshots/'
+    SONAR_URL   = 'http://localhost:9000' // adapte si ton SonarQube est ailleurs
+    NEXUS_URL   = 'http://192.168.2.76:8081/repository/maven-snapshots/' // IP locale
   }
 
   stages {
@@ -74,7 +74,13 @@ pipeline {
       steps {
         echo '🔍 Scanning image with Trivy'
         catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-          sh "trivy image --exit-code 1 --severity HIGH,CRITICAL $DOCKER_USER/demoapp:${GIT_COMMIT}"
+          withCredentials([usernamePassword(
+            credentialsId: DOCKER_CRED,
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+          )]) {
+            sh "trivy image --exit-code 1 --severity HIGH,CRITICAL $DOCKER_USER/demoapp:${GIT_COMMIT}"
+          }
         }
       }
     }
@@ -98,7 +104,7 @@ pipeline {
   </servers>
 </settings>
 EOF'''
-          sh 'mvn deploy -B -s settings.xml -DaltDeploymentRepository=nexus::default::http://192.168.2.76:8081/repository/maven-snapshots/'
+          sh 'mvn deploy -B -s settings.xml -DaltDeploymentRepository=nexus::http://192.168.2.76:8081/repository/maven-snapshots/'
         }
       }
     }
