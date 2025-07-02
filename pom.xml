@@ -5,7 +5,7 @@
 
   <groupId>com.example</groupId>
   <artifactId>demo</artifactId>
-  <version>0.0.1-SNAPSHOT</version> <!-- Obligatoire pour SNAPSHOT -->
+  <version>0.0.1-SNAPSHOT</version>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -42,13 +42,36 @@
 
   <build>
     <plugins>
+      <!-- Spring Boot -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+
+      <!-- ✅ JaCoCo Coverage Plugin -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.8</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
+  <!-- Pour déployer sur Nexus -->
   <distributionManagement>
     <snapshotRepository>
       <id>nexus</id>
