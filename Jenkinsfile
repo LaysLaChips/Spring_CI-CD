@@ -9,8 +9,8 @@ pipeline {
   environment {
     DOCKER_CRED = 'dockerhub'
     SONAR_TOKEN = credentials('sonar-token')
-    SONAR_URL   = 'http://localhost:9000'
-    NEXUS_URL   = 'http://3.80.54.73/repository/maven-snapshots/'
+    SONAR_URL   = 'http://192.168.2.76:9000'
+    NEXUS_URL   = 'http://192.168.2.76:8081/repository/maven-snapshots/'
   }
 
   stages {
@@ -80,15 +80,14 @@ pipeline {
     }
 
     stage('Deploy to Nexus') {
-  steps {
-    echo '📦 Déploiement du JAR vers Nexus (maven-snapshots)'
-    withCredentials([usernamePassword(
-      credentialsId: 'nexus-credentials',
-      usernameVariable: 'NEXUS_USER',
-      passwordVariable: 'NEXUS_PASS'
-    )]) {
-      // Crée un settings.xml temporaire avec les credentials
-      sh '''cat > settings.xml <<EOF
+      steps {
+        echo '📦 Déploiement du JAR vers Nexus (maven-snapshots)'
+        withCredentials([usernamePassword(
+          credentialsId: 'nexus-credentials',
+          usernameVariable: 'NEXUS_USER',
+          passwordVariable: 'NEXUS_PASS'
+        )]) {
+          sh '''cat > settings.xml <<EOF
 <settings>
   <servers>
     <server>
@@ -99,12 +98,10 @@ pipeline {
   </servers>
 </settings>
 EOF'''
-      
-      // Utilise le nouveau settings.xml et corrige la syntaxe du repository
-      sh 'mvn deploy -B -s settings.xml -DaltDeploymentRepository=nexus::http://3.80.54.73:8081/repository/maven-snapshots/'
+          sh 'mvn deploy -B -s settings.xml -DaltDeploymentRepository=nexus::default::http://192.168.2.76:8081/repository/maven-snapshots/'
+        }
+      }
     }
-  }
-}
   }
 
   post {
